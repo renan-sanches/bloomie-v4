@@ -8,7 +8,7 @@ const DiagnoseInput = z.object({
 });
 
 const DiagnoseOutput = z.object({
-  healthScore: z.number().min(0).max(100).describe("Overall health score from 0 (dying) to 100 (thriving)"),
+  healthScore: z.number().describe("Overall health score from 0 (dying) to 100 (thriving)"),
   issues: z.array(
     z.object({
       name: z.string(),
@@ -17,7 +17,7 @@ const DiagnoseOutput = z.object({
     })
   ),
   treatmentPlan: z.array(z.string()).describe("Ordered list of treatment steps"),
-  followUpDays: z.number().int().positive().describe("Days until follow-up check is recommended"),
+  followUpDays: z.number().int().describe("Days until follow-up check is recommended"),
   warningSigns: z.array(z.string()).describe("Signs to watch for that indicate worsening condition"),
 });
 

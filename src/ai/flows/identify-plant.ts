@@ -9,11 +9,11 @@ const IdentifyInput = z.object({
 const IdentifyOutput = z.object({
   commonName: z.string(),
   scientificName: z.string(),
-  confidence: z.number().min(0).max(1),
+  confidence: z.number(),
   description: z.string().describe("Two-sentence description of the plant"),
   careDifficulty: z.enum(["easy", "moderate", "hard"]),
   suggestedCareProfile: z.object({
-    wateringFrequencyDays: z.number().int().positive(),
+    wateringFrequencyDays: z.number().int(),
     sunlight: z.enum(["low", "indirect", "bright", "direct"]),
     humidity: z.enum(["low", "medium", "high"]),
     tempMin: z.number(),
