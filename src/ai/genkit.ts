@@ -1,14 +1,22 @@
 import { genkit } from "genkit";
 import { googleAI } from "@genkit-ai/googleai";
 
-// Quality model — for care plans, growth analysis, placement helper
+const googleApiKey = process.env.GOOGLE_AI_API_KEY;
+const plugins = googleApiKey ? [googleAI({ apiKey: googleApiKey })] : [];
+
+const qualityModel =
+  process.env.GOOGLE_AI_MODEL ?? "googleai/gemini-2.5-pro";
+const fastModel =
+  process.env.GOOGLE_AI_FAST_MODEL ?? "googleai/gemini-2.5-flash";
+
+// Quality model - for care plans, growth analysis, placement helper.
 export const ai = genkit({
-  plugins: [googleAI({ apiKey: process.env.GOOGLE_AI_API_KEY })],
-  model: "googleai/gemini-3-pro-preview",
+  plugins,
+  model: qualityModel,
 });
 
-// Fast model — for identify, diagnose, chat, measure (latency-sensitive)
+// Fast model - for identify, diagnose, chat, measure (latency-sensitive).
 export const aiFast = genkit({
-  plugins: [googleAI({ apiKey: process.env.GOOGLE_AI_API_KEY })],
-  model: "googleai/gemini-3-flash-preview",
+  plugins,
+  model: fastModel,
 });

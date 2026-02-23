@@ -63,7 +63,7 @@ export default function JunglePage() {
           <Link href="/jungle/add">
             <Button className="bg-brand-green hover:bg-brand-green/90 text-white rounded-[16px] gap-2">
               <Plus size={18} />
-              <span className="hidden sm:inline">Add Plant</span>
+              <span className="hidden sm:inline">AI Add Plant</span>
             </Button>
           </Link>
         </div>

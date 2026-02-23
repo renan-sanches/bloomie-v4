@@ -21,12 +21,19 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ flow: string }> }
 ) {
+  if (!process.env.GOOGLE_AI_API_KEY) {
+    return NextResponse.json(
+      {
+        code: "AI_CONFIG_MISSING",
+        error: "AI is not configured. Set GOOGLE_AI_API_KEY and restart the app.",
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     const { flow: flowName } = await params;
-    const body = await req.json();
-
     const flow = getFlow(flowName);
-
     if (!flow) {
       return NextResponse.json(
         { error: `Flow "${flowName}" not found` },
@@ -34,10 +41,27 @@ export async function POST(
       );
     }
 
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON body." },
+        { status: 400 }
+      );
+    }
+
     const result = await flow(body);
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const lowered = message.toLowerCase();
+    const safeMessage =
+      lowered.includes("model") && lowered.includes("not found")
+        ? "AI model is unavailable. Update model configuration and try again."
+        : lowered.includes("api key")
+        ? "AI API key is invalid or missing."
+        : message;
+    return NextResponse.json({ error: safeMessage }, { status: 500 });
   }
 }

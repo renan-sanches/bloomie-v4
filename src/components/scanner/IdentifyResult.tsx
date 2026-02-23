@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { useAuth } from "@/contexts/AuthContext";
 import { setPlant, setQuest } from "@/lib/firestore";
+import { uploadPlantPhoto } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Loader2 } from "lucide-react";
@@ -30,27 +31,61 @@ const difficultyColors: Record<string, string> = {
   hard: "bg-rose-50 text-rose-500",
 };
 
-export function IdentifyResult({ data, photoBase64 }: { data: IdentifyData; photoBase64?: string }) {
+function base64ToFile(base64: string, filename: string): File {
+  const byteString = atob(base64);
+  const bytes = new Uint8Array(byteString.length);
+  for (let i = 0; i < byteString.length; i += 1) {
+    bytes[i] = byteString.charCodeAt(i);
+  }
+  return new File([bytes], filename, { type: "image/jpeg" });
+}
+
+export function IdentifyResult({
+  data,
+  photoBase64,
+  onAdded,
+}: {
+  data: IdentifyData;
+  photoBase64?: string;
+  onAdded?: (plantId: string) => void;
+}) {
   const { user } = useAuth();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const addToJungle = async () => {
-    if (!user) return;
+    if (!user) {
+      setSaveError("You need to sign in before adding plants.");
+      return;
+    }
+    setSaveError("");
     setAdding(true);
     try {
       const plantId = nanoid();
       const nextWater = new Date();
       nextWater.setDate(nextWater.getDate() + data.suggestedCareProfile.wateringFrequencyDays);
       const nextWaterDate = nextWater.toISOString().split("T")[0];
+      const initialHealthScore = Math.round(70 + Math.max(0, Math.min(1, data.confidence)) * 25);
+
+      let photoUrl: string | undefined;
+      if (photoBase64) {
+        try {
+          const imageFile = base64ToFile(photoBase64, `${plantId}.jpg`);
+          photoUrl = await uploadPlantPhoto(user.uid, plantId, imageFile);
+        } catch (uploadErr) {
+          console.error("Failed to upload plant photo", uploadErr);
+        }
+      }
 
       const plant: Plant = {
         id: plantId,
         userId: user.uid,
         name: data.commonName,
-        species: data.scientificName,
-        healthScore: 90,
+        species: data.scientificName || data.commonName,
+        healthScore: initialHealthScore,
+        photoUrl,
         careProfile: {
           wateringFrequencyDays: data.suggestedCareProfile.wateringFrequencyDays,
           sunlight: data.suggestedCareProfile.sunlight,
@@ -78,7 +113,14 @@ export function IdentifyResult({ data, photoBase64 }: { data: IdentifyData; phot
       await setQuest(user.uid, quest.id, quest);
 
       setAdded(true);
-      setTimeout(() => router.push(`/jungle/${plantId}`), 1000);
+      if (onAdded) {
+        onAdded(plantId);
+      } else {
+        setTimeout(() => router.push(`/jungle/${plantId}`), 1000);
+      }
+    } catch (err) {
+      console.error("Failed to add plant from identification", err);
+      setSaveError("Could not add this plant right now. Please try again.");
     } finally {
       setAdding(false);
     }
@@ -127,6 +169,7 @@ export function IdentifyResult({ data, photoBase64 }: { data: IdentifyData; phot
           "Add to Jungle 🌿"
         )}
       </Button>
+      {saveError && <p className="text-sm text-rose-500">{saveError}</p>}
     </div>
   );
 }

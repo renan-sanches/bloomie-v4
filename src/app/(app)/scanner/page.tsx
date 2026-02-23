@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PhotoUploader } from "@/components/scanner/PhotoUploader";
 import { IdentifyResult } from "@/components/scanner/IdentifyResult";
 import { DiagnoseResult } from "@/components/scanner/DiagnoseResult";
+import { callAiFlow } from "@/lib/ai-client";
 
 export const dynamic = "force-dynamic";
 
@@ -34,19 +35,6 @@ const MODE_DESCRIPTIONS: Record<Mode, string> = {
   placement: "Find the best spots in your room for plants",
 };
 
-async function callFlow(flowName: string, body: object) {
-  const res = await fetch(`/api/ai/${flowName}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(err.error ?? "AI request failed");
-  }
-  return res.json();
-}
-
 export default function ScannerPage() {
   const [mode, setMode] = useState<Mode>("identify");
   const [result, setResult] = useState<any>(null);
@@ -67,7 +55,7 @@ export default function ScannerPage() {
       } else {
         body = { photoBase64: base64 };
       }
-      const data = await callFlow(flowName, body);
+      const data = await callAiFlow(flowName, body);
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -112,7 +100,15 @@ export default function ScannerPage() {
 
         {(Object.keys(MODE_LABELS) as Mode[]).map((m) => (
           <TabsContent key={m} value={m}>
-            <PhotoUploader onPhoto={handlePhoto} disabled={loading} />
+            <PhotoUploader
+              onPhoto={handlePhoto}
+              onClear={() => {
+                setResult(null);
+                setError("");
+                setLastBase64("");
+              }}
+              disabled={loading}
+            />
           </TabsContent>
         ))}
       </Tabs>

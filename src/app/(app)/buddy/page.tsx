@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Send, Paperclip, X, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { callAiFlow } from "@/lib/ai-client";
 
 type Message = { role: "user" | "model"; text: string };
 
@@ -119,21 +120,15 @@ export default function BuddyPage() {
       };
       if (photoBase64) body.photoBase64 = photoBase64;
 
-      const res = await fetch("/api/ai/bloomie-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) throw new Error("API error");
-
-      const data = await res.json();
+      const data = await callAiFlow<{ reply?: string }>("bloomie-chat", body);
       const reply: string = data?.reply ?? "No response received.";
       setMessages((prev) => [...prev, { role: "model", text: reply }]);
-    } catch {
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Sorry, I couldn't connect. Please try again.";
       setMessages((prev) => [
         ...prev,
-        { role: "model", text: "Sorry, I couldn't connect. Please try again." },
+        { role: "model", text: errorMessage },
       ]);
     } finally {
       setLoading(false);

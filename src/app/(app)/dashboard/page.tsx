@@ -27,6 +27,7 @@ import {
   Wind,
 } from "lucide-react";
 import { fetchWeather, getWeatherEmoji, WeatherData } from "@/lib/weather";
+import { callAiFlow } from "@/lib/ai-client";
 
 export const dynamic = "force-dynamic";
 
@@ -166,24 +167,15 @@ export default function DashboardPage() {
     setPredictionLoading(true);
     setPredictionPlantName(targetPlant.name);
     try {
-      const res = await fetch("/api/ai/health-prediction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plantName: targetPlant.name,
-          species: targetPlant.species,
-          healthScore: targetPlant.healthScore,
-          status: targetPlant.status,
-          wateringFrequencyDays: targetPlant.careProfile.wateringFrequencyDays,
-          sunlight: targetPlant.careProfile.sunlight,
-          humidity: targetPlant.careProfile.humidity,
-        }),
+      const data = await callAiFlow<PredictionOutput>("health-prediction", {
+        plantName: targetPlant.name,
+        species: targetPlant.species,
+        healthScore: targetPlant.healthScore,
+        status: targetPlant.status,
+        wateringFrequencyDays: targetPlant.careProfile.wateringFrequencyDays,
+        sunlight: targetPlant.careProfile.sunlight,
+        humidity: targetPlant.careProfile.humidity,
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Failed to generate prediction");
-      }
-      const data: PredictionOutput = await res.json();
       setPrediction(data);
     } catch (err) {
       setPredictionError(err instanceof Error ? err.message : "Unknown error");
@@ -199,25 +191,16 @@ export default function DashboardPage() {
     setReportLoading(true);
     setReportOpen(true);
     try {
-      const res = await fetch("/api/ai/weekly-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userName: user?.displayName ?? "Plant Parent",
-          plants: plants.map((p) => ({
-            name: p.name,
-            healthScore: p.healthScore,
-            status: p.status,
-          })),
-          streak: 0,
-          level: 1,
-        }),
+      const data = await callAiFlow<WeeklyReportOutput>("weekly-report", {
+        userName: user?.displayName ?? "Plant Parent",
+        plants: plants.map((p) => ({
+          name: p.name,
+          healthScore: p.healthScore,
+          status: p.status,
+        })),
+        streak: 0,
+        level: 1,
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Failed to generate report");
-      }
-      const data: WeeklyReportOutput = await res.json();
       setWeeklyReport(data);
     } catch (err) {
       setReportError(err instanceof Error ? err.message : "Unknown error");
@@ -233,20 +216,14 @@ export default function DashboardPage() {
       const w = await fetchWeather();
       setWeather(w);
       // Then get AI adjustments
-      const res = await fetch("/api/ai/weather-adjustment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          temperature: w.temperature,
-          humidity: w.humidity,
-          precipitation: w.precipitation,
-          weatherDescription: w.weatherDescription,
-          season: w.season,
-          plantCount: plants.length,
-        }),
+      const adj = await callAiFlow<WeatherAdjOutput>("weather-adjustment", {
+        temperature: w.temperature,
+        humidity: w.humidity,
+        precipitation: w.precipitation,
+        weatherDescription: w.weatherDescription,
+        season: w.season,
+        plantCount: plants.length,
       });
-      if (!res.ok) throw new Error("AI request failed");
-      const adj = await res.json();
       setWeatherAdj(adj);
       setAdjExpanded(true);
     } catch (err) {
@@ -469,7 +446,7 @@ export default function DashboardPage() {
         <div className="flex gap-3 flex-wrap">
           <Link href="/jungle/add">
             <Button className="bg-brand-green hover:bg-brand-green/90 text-white rounded-[16px] gap-2">
-              <Plus size={18} /> Add Plant
+              <Plus size={18} /> AI Add Plant
             </Button>
           </Link>
           <Link href="/scanner">

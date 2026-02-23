@@ -5,29 +5,49 @@ import { Camera, Upload, X } from "lucide-react";
 
 interface Props {
   onPhoto: (base64: string) => void;
+  onClear?: () => void;
   disabled?: boolean;
 }
 
-export function PhotoUploader({ onPhoto, disabled }: Props) {
+const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024;
+
+export function PhotoUploader({ onPhoto, onClear, disabled }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const handleFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setError("Image is too large. Use a file up to 8MB.");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
       const base64 = dataUrl.split(",")[1];
+      setError("");
       setPreview(dataUrl);
       onPhoto(base64);
+    };
+    reader.onerror = () => {
+      setError("Could not read this image. Try another one.");
     };
     reader.readAsDataURL(file);
   };
 
   const clear = () => {
     setPreview(null);
+    setError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
+    onClear?.();
   };
 
   return (
@@ -85,6 +105,8 @@ export function PhotoUploader({ onPhoto, disabled }: Props) {
           <Upload size={18} /> Upload
         </Button>
       </div>
+
+      {error && <p className="text-sm text-rose-500 text-center">{error}</p>}
     </div>
   );
 }

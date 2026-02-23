@@ -180,14 +180,10 @@ export default function WishlistPage() {
                   variant="outline"
                   className="rounded-[12px] border-brand-green text-brand-green hover:bg-brand-green/10 text-xs"
                   onClick={() =>
-                    router.push(
-                      `/jungle/add?name=${encodeURIComponent(item.name)}${
-                        item.species ? `&species=${encodeURIComponent(item.species)}` : ""
-                      }`
-                    )
+                    router.push(`/jungle/add?wishlist=${encodeURIComponent(item.name)}`)
                   }
                 >
-                  Add to Jungle
+                  AI Add to Jungle
                 </Button>
               </div>
             </div>

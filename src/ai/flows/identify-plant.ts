@@ -9,15 +9,15 @@ const IdentifyInput = z.object({
 const IdentifyOutput = z.object({
   commonName: z.string(),
   scientificName: z.string(),
-  confidence: z.number(),
+  confidence: z.number().min(0).max(1),
   description: z.string().describe("Two-sentence description of the plant"),
   careDifficulty: z.enum(["easy", "moderate", "hard"]),
   suggestedCareProfile: z.object({
-    wateringFrequencyDays: z.number().int(),
+    wateringFrequencyDays: z.number().int().min(1).max(60),
     sunlight: z.enum(["low", "indirect", "bright", "direct"]),
     humidity: z.enum(["low", "medium", "high"]),
-    tempMin: z.number(),
-    tempMax: z.number(),
+    tempMin: z.number().min(32).max(95),
+    tempMax: z.number().min(45).max(110),
   }),
 });
 
@@ -45,7 +45,7 @@ const identifyPlantFlow = aiFast.defineFlow(
             "- confidence: your identification confidence between 0 and 1",
             "- description: exactly two sentences describing the plant",
             "- careDifficulty: one of 'easy', 'moderate', or 'hard'",
-            "- suggestedCareProfile: an object with wateringFrequencyDays (integer), sunlight ('low'|'indirect'|'bright'|'direct'), humidity ('low'|'medium'|'high'), tempMin (°C), tempMax (°C)",
+            "- suggestedCareProfile: an object with wateringFrequencyDays (integer 1-60), sunlight ('low'|'indirect'|'bright'|'direct'), humidity ('low'|'medium'|'high'), tempMin (°F), tempMax (°F)",
           ].join("\n"),
         },
       ],

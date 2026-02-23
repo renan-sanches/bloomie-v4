@@ -36,6 +36,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type { Plant, CareHistoryEntry } from "@/types";
+import { callAiFlow } from "@/lib/ai-client";
 
 export const dynamic = "force-dynamic";
 
@@ -185,13 +186,10 @@ export default function PlantDetailPage() {
     setAiLoading("portrait");
     setAiError(null);
     try {
-      const res = await fetch("/api/ai/generate-living-portrait", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plantName: plant.name, species: plant.species }),
+      const data = await callAiFlow<LivingPortrait>("generate-living-portrait", {
+        plantName: plant.name,
+        species: plant.species,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate portrait");
       setLivingPortrait(data as LivingPortrait);
       setShowPortrait(true);
     } catch (err) {
@@ -206,17 +204,11 @@ export default function PlantDetailPage() {
     setAiLoading("call");
     setAiError(null);
     try {
-      const res = await fetch("/api/ai/call-plant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plantName: plant.name,
-          species: plant.species,
-          healthScore: plant.healthScore,
-        }),
+      const data = await callAiFlow<PlantCall>("call-plant", {
+        plantName: plant.name,
+        species: plant.species,
+        healthScore: plant.healthScore,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to connect");
       setPlantCall(data as PlantCall);
       setCallResponse(null);
       setShowCall(true);
@@ -233,17 +225,11 @@ export default function PlantDetailPage() {
     setAiLoading("careplan");
     setAiError(null);
     try {
-      const res = await fetch("/api/ai/generate-care-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plantName: plant.name,
-          issue: carePlanIssue,
-          severity: carePlanSeverity,
-        }),
+      const data = await callAiFlow<CarePlan>("generate-care-plan", {
+        plantName: plant.name,
+        issue: carePlanIssue,
+        severity: carePlanSeverity,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate plan");
       setCarePlan(data as CarePlan);
       setShowCarePlanForm(false);
     } catch (err) {
