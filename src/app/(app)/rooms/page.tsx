@@ -10,7 +10,6 @@ import { Home, Plus } from "lucide-react";
 import Link from "next/link";
 import type { Room } from "@/types";
 
-export const dynamic = "force-dynamic";
 
 export default function RoomsPage() {
   const { user } = useAuth();

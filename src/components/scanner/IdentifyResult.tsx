@@ -85,7 +85,7 @@ export function IdentifyResult({
         name: data.commonName,
         species: data.scientificName || data.commonName,
         healthScore: initialHealthScore,
-        photoUrl,
+        ...(photoUrl ? { photoUrl } : {}),
         careProfile: {
           wateringFrequencyDays: data.suggestedCareProfile.wateringFrequencyDays,
           sunlight: data.suggestedCareProfile.sunlight,
@@ -100,17 +100,22 @@ export function IdentifyResult({
 
       await setPlant(user.uid, plantId, plant);
 
-      const quest: Quest = {
-        id: nanoid(),
-        userId: user.uid,
-        plantId,
-        plantName: data.commonName,
-        type: "water",
-        dueDate: nextWaterDate,
-        status: "pending",
-        xpReward: 10,
-      };
-      await setQuest(user.uid, quest.id, quest);
+      try {
+        const quest: Quest = {
+          id: nanoid(),
+          userId: user.uid,
+          plantId,
+          plantName: data.commonName,
+          type: "water",
+          dueDate: nextWaterDate,
+          status: "pending",
+          xpReward: 10,
+        };
+        await setQuest(user.uid, quest.id, quest);
+      } catch (questErr) {
+        // Keep plant creation successful even if quest creation fails.
+        console.error("Failed to create initial watering quest", questErr);
+      }
 
       setAdded(true);
       if (onAdded) {

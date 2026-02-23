@@ -16,7 +16,6 @@ import {
 import { ArrowLeft } from "lucide-react";
 import type { Room } from "@/types";
 
-export const dynamic = "force-dynamic";
 
 export default function AddRoomPage() {
   const { user } = useAuth();

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import type { Plant } from "@/types";
@@ -21,10 +22,12 @@ export function PlantCard({ plant }: Props) {
       <div className="bg-white rounded-[32px] shadow-[0px_4px_24px_rgba(0,0,0,0.06)] overflow-hidden hover:scale-[1.02] transition-transform duration-200 cursor-pointer">
         <div className="aspect-square bg-[#2C3E2F] relative flex items-center justify-center">
           {plant.photoUrl ? (
-            <img
+            <Image
               src={plant.photoUrl}
               alt={plant.name}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              className="object-cover"
             />
           ) : (
             <span className="text-5xl select-none">🌿</span>

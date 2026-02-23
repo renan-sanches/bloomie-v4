@@ -7,7 +7,6 @@ import { IdentifyResult } from "@/components/scanner/IdentifyResult";
 import { DiagnoseResult } from "@/components/scanner/DiagnoseResult";
 import { callAiFlow } from "@/lib/ai-client";
 
-export const dynamic = "force-dynamic";
 
 type Mode = "identify" | "diagnose" | "measure" | "propagate" | "placement";
 

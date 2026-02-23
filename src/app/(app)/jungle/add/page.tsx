@@ -8,7 +8,6 @@ import { IdentifyResult } from "@/components/scanner/IdentifyResult";
 import { Skeleton } from "@/components/ui/skeleton";
 import { callAiFlow } from "@/lib/ai-client";
 
-export const dynamic = "force-dynamic";
 
 interface IdentifyData {
   commonName: string;

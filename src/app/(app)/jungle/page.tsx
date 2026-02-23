@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScanLine, Plus, Star, Archive } from "lucide-react";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
 
 type Filter = "all" | "water" | "sick" | "propagating" | "archive";
 

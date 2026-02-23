@@ -1,21 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Import all flows so they self-register via registerFlow()
-import "@/ai/flows/identify-plant";
-import "@/ai/flows/diagnose-plant";
-import "@/ai/flows/measure-environment";
-import "@/ai/flows/propagate-analysis";
-import "@/ai/flows/growth-analysis";
-import "@/ai/flows/placement-helper";
-import "@/ai/flows/generate-care-plan";
-import "@/ai/flows/bloomie-chat";
-import "@/ai/flows/generate-living-portrait";
-import "@/ai/flows/call-plant";
-import "@/ai/flows/health-prediction";
-import "@/ai/flows/weekly-report";
-import "@/ai/flows/weather-adjustment";
-
 import { getFlow } from "@/ai/registry";
+
+const flowLoaders: Record<string, () => Promise<unknown>> = {
+  "identify-plant": () => import("@/ai/flows/identify-plant"),
+  "diagnose-plant": () => import("@/ai/flows/diagnose-plant"),
+  "measure-environment": () => import("@/ai/flows/measure-environment"),
+  "propagate-analysis": () => import("@/ai/flows/propagate-analysis"),
+  "growth-analysis": () => import("@/ai/flows/growth-analysis"),
+  "placement-helper": () => import("@/ai/flows/placement-helper"),
+  "generate-care-plan": () => import("@/ai/flows/generate-care-plan"),
+  "bloomie-chat": () => import("@/ai/flows/bloomie-chat"),
+  "generate-living-portrait": () => import("@/ai/flows/generate-living-portrait"),
+  "call-plant": () => import("@/ai/flows/call-plant"),
+  "health-prediction": () => import("@/ai/flows/health-prediction"),
+  "weekly-report": () => import("@/ai/flows/weekly-report"),
+  "weather-adjustment": () => import("@/ai/flows/weather-adjustment"),
+};
+
+const loadedFlows = new Set<string>();
+
+async function ensureFlowLoaded(flowName: string) {
+  if (loadedFlows.has(flowName)) return;
+
+  const loader = flowLoaders[flowName];
+  if (!loader) return;
+
+  await loader();
+  loadedFlows.add(flowName);
+}
 
 export async function POST(
   req: NextRequest,
@@ -33,6 +45,8 @@ export async function POST(
 
   try {
     const { flow: flowName } = await params;
+    await ensureFlowLoaded(flowName);
+
     const flow = getFlow(flowName);
     if (!flow) {
       return NextResponse.json(

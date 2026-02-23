@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { getDocs, orderBy, query } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,8 +38,6 @@ import {
 } from "lucide-react";
 import type { Plant, CareHistoryEntry } from "@/types";
 import { callAiFlow } from "@/lib/ai-client";
-
-export const dynamic = "force-dynamic";
 
 const statusStyles: Record<Plant["status"], string> = {
   healthy: "bg-brand-green/10 text-brand-green",
@@ -319,12 +318,14 @@ export default function PlantDetailPage() {
       </div>
 
       {/* Hero photo */}
-      <div className="bg-[#2C3E2F] rounded-[32px] overflow-hidden aspect-video mb-6 flex items-center justify-center">
+      <div className="bg-[#2C3E2F] rounded-[32px] overflow-hidden aspect-video mb-6 flex items-center justify-center relative">
         {plant.photoUrl ? (
-          <img
+          <Image
             src={plant.photoUrl}
             alt={plant.name}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
           />
         ) : (
           <span className="text-8xl select-none">🌿</span>
@@ -693,7 +694,7 @@ export default function PlantDetailPage() {
 
           <div className="flex flex-col items-center gap-6 px-6 max-w-sm w-full">
             <div
-              className="w-full aspect-square rounded-[32px] overflow-hidden"
+              className="w-full aspect-square rounded-[32px] overflow-hidden relative"
               style={{
                 animation:
                   livingPortrait.animationStyle === "sway"
@@ -704,10 +705,12 @@ export default function PlantDetailPage() {
               }}
             >
               {plant.photoUrl ? (
-                <img
+                <Image
                   src={plant.photoUrl}
                   alt={plant.name}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 384px"
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-[#2C3E2F] flex items-center justify-center">
@@ -750,12 +753,14 @@ export default function PlantDetailPage() {
 
             {/* Avatar + info */}
             <div className="flex flex-col items-center gap-3">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-brand-green/20 shrink-0">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-brand-green/20 shrink-0 relative">
                 {plant.photoUrl ? (
-                  <img
+                  <Image
                     src={plant.photoUrl}
                     alt={plant.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="96px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-[#2C3E2F] flex items-center justify-center">

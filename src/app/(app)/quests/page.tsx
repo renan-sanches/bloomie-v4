@@ -6,7 +6,6 @@ import { setQuest } from "@/lib/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Quest } from "@/types";
 
-export const dynamic = "force-dynamic";
 
 export default function QuestsPage() {
   const { user } = useAuth();

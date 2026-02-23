@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
-import { getRoom, deleteRoom, setPlant } from "@/lib/firestore";
+import { clearPlantRoom, getRoom, deleteRoom, setPlant } from "@/lib/firestore";
 import { usePlants } from "@/hooks/use-plants";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,8 +25,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Room } from "@/types";
-
-export const dynamic = "force-dynamic";
 
 export default function RoomDetailPage() {
   const { user } = useAuth();
@@ -72,8 +71,7 @@ export default function RoomDetailPage() {
   const handleRemove = async (plantId: string) => {
     if (!user) return;
     setRemoving(plantId);
-    // Use undefined cast to satisfy Firestore partial update — Firestore will delete the field
-    await setPlant(user.uid, plantId, { roomId: undefined });
+    await clearPlantRoom(user.uid, plantId);
     setRemoving(null);
   };
 
@@ -267,12 +265,14 @@ export default function RoomDetailPage() {
                 >
                   {/* Thumbnail */}
                   <Link href={`/jungle/${plant.id}`} className="block">
-                    <div className="aspect-square bg-[#2C3E2F] flex items-center justify-center">
+                    <div className="aspect-square bg-[#2C3E2F] flex items-center justify-center relative">
                       {plant.photoUrl ? (
-                        <img
+                        <Image
                           src={plant.photoUrl}
                           alt={plant.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 50vw, 33vw"
+                          className="object-cover"
                         />
                       ) : (
                         <span className="text-4xl select-none">🌿</span>

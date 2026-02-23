@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { ChevronLeft, ChevronRight, Download, Link as LinkIcon, Calendar, UmbrellaOff } from "lucide-react";
 import type { Quest, CareType } from "@/types";
 
-export const dynamic = "force-dynamic";
 
 // ─── ICS Helpers ─────────────────────────────────────────────────────────────
 

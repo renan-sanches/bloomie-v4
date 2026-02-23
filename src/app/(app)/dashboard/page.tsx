@@ -29,7 +29,6 @@ import {
 import { fetchWeather, getWeatherEmoji, WeatherData } from "@/lib/weather";
 import { callAiFlow } from "@/lib/ai-client";
 
-export const dynamic = "force-dynamic";
 
 // ── Type definitions ────────────────────────────────────────────────────────
 
